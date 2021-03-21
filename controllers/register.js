@@ -26,10 +26,7 @@ const handleRegister=(req,res,db,bcrypt) => {
                     })
             })
             .then(trx.commit)
-            .catch(err =>{
-                console.log(err,"Failed to insert")
-                trx.rollback
-            })
+            .catch(trx.rollback)
     })
         .catch(err => {
             console.log(err,"Failed trx")
