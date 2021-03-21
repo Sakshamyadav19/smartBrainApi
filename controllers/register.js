@@ -5,14 +5,14 @@ const handleRegister=(req,res,db,bcrypt) => {
     }
     const hash = bcrypt.hashSync(password);
     db.transaction(trx => {
-        trx.insert({
+        db.insert({
             hash: hash,
             email: email
         })
             .into('login')
             .returning('email')
             .then(loginEmail => {
-                return trx('users')
+                return db('users')
                     .returning('*')
                     .insert({
                         email: loginEmail[0],
@@ -21,11 +21,19 @@ const handleRegister=(req,res,db,bcrypt) => {
                     }).then(user => {
                         res.json(user[0]);
                     })
+                    .catch(err =>{
+                        console.log(err,"Failed to add user")
+                    })
             })
             .then(trx.commit)
-            .catch(trx.rollback);
+            .catch(err =>{
+                console.log(err,"Failed to insert")
+                trx.rollback
+            })
     })
-        .catch(err => res.status(400).json('Unable to register'))
+        .catch(err => {
+            console.log(err,"Failed trx")
+            res.status(400).json('Unable to register')})
 }
 
 module.exports={
